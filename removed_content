@@ -1,0 +1,95 @@
+#find news links
+soup = BeautifulSoup(content, 'html.parser')
+divs = soup.find_all('a')
+
+news = []
+
+for div in divs:
+
+    link = div.get('href')
+    #print(link)
+    if link.find('news') >= 10:
+        news.append(link)
+        #print(link.find('news'))
+        #print("news article")
+
+super_p = []
+
+
+#seperate p from link list
+for ind_link in news:
+
+    news_link = requests.get(ind_link)
+    news_content = news_link.content
+
+    news_soup = BeautifulSoup(news_content,'html.parser')
+    paragraphs = news_soup.find_all('p')
+    micro_peen = []
+    for p in paragraphs:
+        app_str = p.string
+        micro_peen.append(app_str)
+    super_p.append(micro_peen)
+
+p = super_p[0]
+
+
+
+
+
+
+
+#functions
+
+def linkFinder(link, sep, tol):
+    req = requests.get(link)
+    r_content = req.content
+    link_soup = BeautifulSoup(r_content, 'html.parser')
+
+    links = link_soup.find_all('a')
+    test = links[0].get('href')
+    news_links = []
+    print(test.find(sep))
+
+
+    for link in links:
+        link_href = link.get('href')
+        sep_index = link_href.find(sep)
+        if sep_index >= tol:
+            news_links.append(link_href)
+
+    return peenFilter(news_links)
+
+
+def peenFilter(link_list):
+    parent_list = []
+    for link in link_list:
+        child_req = requests.get(link)
+        child_content = child_req.content
+
+        child_soup = BeautifulSoup(child_content, 'html.parser')
+        child_p = child_soup.find_all('p')
+
+        teen_p = []
+        for ind_p in child_p:
+            teen_p.append(ind_p.string)
+
+        parent_list.append(teen_p)
+
+    return parent_list
+
+
+def wordFilter(child_list):
+    word_list = []
+    for element in child_list:
+        split_stream = []
+        if element is not None:
+            split_stream.append(element.split())
+
+        word_list.append(split_stream)
+
+
+parent = linkFinder('https://finance.yahoo.com/', 'news', 10)
+links = peenFilter(parent)
+
+
+print(links)
