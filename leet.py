@@ -2,7 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 from news import newsScraper
 import matplotlib.pyplot as plt
-
+import numpy as np
 newsScrappers = []
 
 
@@ -15,10 +15,12 @@ print(yf.word_count)
 newsScrappers.append(yf)
 
 
+
 for newsBoi in newsScrappers:
     count_dict = newsBoi.word_count
     keys = count_dict.keys()
     values = count_dict.values()
-    plt.scatter(keys,values,alpha=0.5)
+    plt.figure(figsize=(len(values),10))
+    scat = plt.bar(keys,values)
     plt.savefig(newsBoi.nickname+".png")
 
