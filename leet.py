@@ -9,53 +9,68 @@ from bs4 import BeautifulSoup
 # 3: the tolerance for the position of that seperator
 # returns : a list of all paragraphs from articles found in the main website
 def newsFilter(url, sep, tolerance):
-    main_request = requests.get(url)
-    main_content = main_request.content
+    main_request = requests.get(url) #get content from main site
+    main_content = main_request.content #create content variable
 
-    main_soup = BeautifulSoup(main_content, 'html.parser')
-    links = main_soup.find_all('a')
+    main_soup = BeautifulSoup(main_content, 'html.parser') # turn to soup
+    links = main_soup.find_all('a') # search soup for all <a> elements
 
     # seperate the men from the boys
 
-    applicable_content = []
+    applicable_content = [] #creating empty lists for the data i want to output
     para_content = []
     for link in links:
-        url = link.get('href')
+        url = link.get('href') #get the href attributes from each <a>
 
-        if url.find(sep) >= tolerance:
-            applicable_content.append(url)
+        if url.find(sep) >= tolerance: #this line finds the seperating term and makes sure its position is greater than the tolerance
+            applicable_content.append(url) #append to applicable list if meets conditions
 
     for content in applicable_content:
-        child_request = requests.get(content)
-        child_content = child_request.content
-        child_soup = BeautifulSoup(child_content, 'html.parser')
+        child_request = requests.get(content) #make request to each link from applicable[]
+        child_content = child_request.content #create variable for content from req
+        child_soup = BeautifulSoup(child_content, 'html.parser') #create soup
 
-        child_para = child_soup.find_all('p')
+        child_para = child_soup.find_all('p') #sort soup for <p> tags
 
-        micro_content = []
+        micro_content = [] # empty list
         for para_raw in child_para:
-            para_str = para_raw.string #<p id=asdasda attr=>asdasdasd</p> into asdasdasd
+            para_str = para_raw.string # extract data from inside <p></p>
             micro_content.append(para_str) # add that string to a list
         para_content.append(micro_content) # add ^ list to a parent list
 
-    return para_content
+    return para_content #return the parent list
 
 
+# this function can really only be used in tandem with newsFilter()
 def wordsFromFilter(parent_list):
-    super = []
-    super_str = []
+    super = [] #super list for the words
+    super_str = "" #messing around with outputing this as a string
     for child in parent_list:
         sub = []
         sub_str = ""
         for p_element in child:
             if p_element is not None:
-                words = p_element.split()
+                words = p_element.lower().split()
                 sub.append(words)
                 for word in words:
                     sub_str += word + " "
         super.append(sub)
-        super_str.append(sub_str)
+        super_str += sub_str + "\n"
     return super_str
+
+
+# takes a count of each word and deposits it into a dict with the key being the word itself
+# need to find a way to easily filter the strings
+def wordListToDict(str):
+    count_dict = {}
+    str = str.lower()
+    for words in str.split():
+        if words != "a" and words != "the" and words != "on" and words !="of" and words !="an" and words!="we":
+            count_dict[words] = str.count(words)
+
+    return count_dict
+
+
 
 
 test = newsFilter('https://finance.yahoo.com/','news',10)
@@ -65,12 +80,11 @@ for t in test:
 
 print("\n Word lists from main filter")
 test_2 = wordsFromFilter(test)
+print(test_2[0])
 
-for item in test_2:
-    print(item)
-
-
-some_str = "BOB EATS ALL THE BURGERS "
+print("\n Word Counter Dictionaries")
+test_3 = wordListToDict(test_2)
+print(test_3)
 
 
 
