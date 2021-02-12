@@ -18,5 +18,9 @@ for li in lis[10:-18]:
     super_dict[li[0]] = " ".join(li[2:])
 
 
+wsj = newsScraper('https://www.wsj.com/news/economy','articles',15)
+print(wsj.news_links)
 
+yf = newsScraper('https://finance.yahoo.com/','news',10)
+print(yf.news_links)
 

@@ -25,13 +25,15 @@ class newsScraper:
         self.p_data = ""
         self.word_count ={}
 
-        str_list = []
+
         # find the news related links
         for links in main_links:
             # get the href attribute from the <a> elements / from main_links
             href = links.get('href')
-            if href.find(self.sep) >= self.tol:
-                self.news_links.append(href)
+            if href is not None:
+                if href not in self.news_links:
+                    if href.find(self.sep) >= self.tol:
+                        self.news_links.append(href)
 
         for news in self.news_links:
             # news request -> content -> soup : previously known as
