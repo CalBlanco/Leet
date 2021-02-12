@@ -4,11 +4,11 @@ import csv
 
 class newsScraper:
 
-    def __init__(self, url, sep, tol):
+    def __init__(self, url, sep, tol,nickname):
         self.url = url
         self.sep = sep
         self.tol = tol
-
+        self.nickname = nickname
 
 
         # main request from website, content and then soup

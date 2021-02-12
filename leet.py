@@ -1,26 +1,24 @@
 import requests
 from bs4 import BeautifulSoup
 from news import newsScraper
+import matplotlib.pyplot as plt
 
-#list of actual tickers
-super_ = requests.get('https://stockanalysis.com/stocks/')
-souper = BeautifulSoup(super_.content,'html.parser')
-lis = souper.find_all('li')
-lix = []
-#only important thing here : super_dict contains all the tickers we are filtering the scraper for
-super_dict = {}
-for li in lis[10:-18]:
-    li = li.string
-    lix.append(li)
-
-    li = li.split()
-
-    super_dict[li[0]] = " ".join(li[2:])
+newsScrappers = []
 
 
-cnbc = newsScraper('https://www.cnbc.com/economy/','2021',8)
+cnbc = newsScraper('https://www.cnbc.com/economy/','2021',8,"cnbc")
 print(cnbc.word_count)
+newsScrappers.append(cnbc)
 
-yf = newsScraper('https://finance.yahoo.com/','news',10)
+yf = newsScraper('https://finance.yahoo.com/','news',10,"yahoo")
 print(yf.word_count)
+newsScrappers.append(yf)
+
+
+for newsBoi in newsScrappers:
+    count_dict = newsBoi.word_count
+    keys = count_dict.keys()
+    values = count_dict.values()
+    plt.scatter(keys,values,alpha=0.5)
+    plt.savefig(newsBoi.nickname+".png")
 
