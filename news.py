@@ -1,6 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
-
+import csv
 
 class newsScraper:
 
@@ -57,8 +57,17 @@ class newsScraper:
         data_list = filter(lambda x: (len(x)<=5), data_list)
         #create dictionary with count
         #this portion takes the longest
+
+        with open('StonkData.csv',mode='r') as infile:
+            reader = csv.reader(infile)
+            with open ('temp.csv',mode='w') as outfile:
+                write = csv.writer(outfile)
+                myDict = {rows[0]: rows[1] for rows in reader}
+
+        count_dict = {}
         for data in data_list:
-            self.word_count[data] = self.p_data.count(data)
+            if data in myDict:
+                self.word_count[data] = self.p_data.count(data)
 
 
 
