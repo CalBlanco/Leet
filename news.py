@@ -11,56 +11,63 @@ class newsScraper:
         self.tol = tol
         self.nickname = nickname
 
-
-        # main request from website, content and then soup
-        main_request = requests.get(url)
-        main_content = main_request.text
-        main_soup = BeautifulSoup(main_content, 'html.parser')
-
-        # main links
-        # get <a> elements from main content
-        main_links = main_soup.find_all('a')
-
         # list for filtered links
         self.news_links = []
         self.p_data = ""
-        self.word_count ={}
+        self.word_count = {}
 
+        main_session = requests.Session()
+        print('session started : ' + self.url)
 
-        # find the news related links
-        for links in main_links:
-            # get the href attribute from the <a> elements / from main_links
-            href = links.get('href')
-            #make sure there is a value to look at
-            if href is not None:
-                #make sure it is not a duplicate with another link
-                if href not in self.news_links:
-                    #if it can not find the base url in the news urls add the base to the news url
-                    #noticed a problem where this actually pasted the url twice so watch out
-                    #could use more work
-                    if href.find(url) == -1:
-                        href = url + href
+        # main request from website, content and then soup
+
+        main_request = main_session.get(url,headers=self.headers)
+        if main_request.status_code == 200:
+            main_soup = BeautifulSoup(main_request.text, 'html.parser')
+            # main links
+            # get <a> elements from main content
+            main_links = main_soup.find_all('a')
+            # find the news related links
+            for links in main_links:
+                # get the href attribute from the <a> elements / from main_links
+                href = links.get('href')
+                # make sure there is a value to look at
+                if href is not None:
+                    # make sure it is not a duplicate with another link
+                    if href not in self.news_links:
+                        # if it can not find the base url in the news urls add the base to the news url
+                        # noticed a problem where this actually pasted the url twice so watch out
+                        # could use more work
+                        if href.find(url) == -1:
+                            href = url + href
+                            if href.find(self.sep) >= self.tol and href.find(self.sep) != -1:
+                                self.news_links.append(href)
+                    else:
                         if href.find(self.sep) >= self.tol and href.find(self.sep) != -1:
                             self.news_links.append(href)
-                else:
-                    if href.find(self.sep) >= self.tol and href.find(self.sep) != -1:
-                        self.news_links.append(href)
+        else:
+            print("connection failed")
+            main_session.close()
 
         for news in self.news_links:
             # news request -> content -> soup : previously known as
-            news_request = requests.get(news)
-            news_content = news_request.text
-            news_soup = BeautifulSoup(news_content,'html.parser')
+            news_request = main_session.get(news,headers=self.headers)
 
-            #find all p elements
-            news_ps = news_soup.find_all('p')
+            if news_request.status_code == 200:
+                news_soup = BeautifulSoup(news_request.text,'html.parser')
+                # find all p elements
+                news_ps = news_soup.find_all('p')
 
+                # convert all paragraphs to a single string
+                for news_p in news_ps:
+                    news_string = news_p.string
+                    if news_string is not None:
+                        self.p_data += news_string
+            else:
+                print('not found')
 
-            #convert all paragraphs to a single string
-            for news_p in news_ps:
-                news_string = news_p.string
-                if news_string is not None:
-                    self.p_data += news_string
+        main_session.close()
+        print('ending session : ' + self.url)
 
         #lower case all string data
         #seperate each word and put into an array
