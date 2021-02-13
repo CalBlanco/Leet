@@ -4,7 +4,8 @@ import csv
 
 class newsScraper:
 
-    def __init__(self, url, sep, tol,nickname):
+    def __init__(self, url, sep, tol=10,nickname="example"):
+        self.headers = {'User-Agent':'Mozilla/5.0'}
         self.url = url
         self.sep = sep
         self.tol = tol
@@ -30,9 +31,19 @@ class newsScraper:
         for links in main_links:
             # get the href attribute from the <a> elements / from main_links
             href = links.get('href')
+            #make sure there is a value to look at
             if href is not None:
+                #make sure it is not a duplicate with another link
                 if href not in self.news_links:
-                    if href.find(self.sep) >= self.tol:
+                    #if it can not find the base url in the news urls add the base to the news url
+                    #noticed a problem where this actually pasted the url twice so watch out
+                    #could use more work
+                    if href.find(url) == -1:
+                        href = url + href
+                        if href.find(self.sep) >= self.tol and href.find(self.sep) != -1:
+                            self.news_links.append(href)
+                else:
+                    if href.find(self.sep) >= self.tol and href.find(self.sep) != -1:
                         self.news_links.append(href)
 
         for news in self.news_links:
@@ -43,6 +54,7 @@ class newsScraper:
 
             #find all p elements
             news_ps = news_soup.find_all('p')
+
 
             #convert all paragraphs to a single string
             for news_p in news_ps:
@@ -70,5 +82,9 @@ class newsScraper:
                 self.word_count[data] = self.p_data.count(data)
 
 
+# class for using yfinance with the word count data
+#class leetus:
+
+    #def __init__(self,count_dict):
 
 
