@@ -7,15 +7,7 @@ import numpy as np
 #list of news scraper class objects
 newsScrappers = []
 
-# business news sources
-# reuters https://www.reuters.com/business
-# yahoo https://finance.yahoo.com/
-# cnbc https://www.cnbc.com/economy/
-# market watch https://www.marketwatch.com/column/financial-news
 
-cnbc = newsScraper('https://www.cnbc.com/economy/','2021',8,"cnbc")
-print(cnbc.word_count)
-newsScrappers.append(cnbc)
 
 yf = newsScraper('https://finance.yahoo.com/','news',10,"yahoo")
 print(yf.word_count)

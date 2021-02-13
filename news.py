@@ -14,7 +14,7 @@ class newsScraper:
 
         # main request from website, content and then soup
         main_request = requests.get(url)
-        main_content = main_request.content
+        main_content = main_request.text
         main_soup = BeautifulSoup(main_content, 'html.parser')
 
         # main links
@@ -49,7 +49,7 @@ class newsScraper:
         for news in self.news_links:
             # news request -> content -> soup : previously known as
             news_request = requests.get(news)
-            news_content = news_request.content
+            news_content = news_request.text
             news_soup = BeautifulSoup(news_content,'html.parser')
 
             #find all p elements
