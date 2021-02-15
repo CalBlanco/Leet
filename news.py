@@ -1,14 +1,12 @@
 import requests
 from bs4 import BeautifulSoup
 import csv
-from datetime import datetime
-import time
 import random
-import yfinance as yf
+
 
 class newsScraper:
 
-    def __init__(self, url, sep, tol=10,nickname="example"):
+    def __init__(self, url, sep, tol=10,nickname="example",debug=True):
         self.headers = {
         'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36',
         'referer' : 'https://www.google.com/',
@@ -17,6 +15,7 @@ class newsScraper:
         self.sep = sep
         self.tol = tol
         self.nickname = nickname
+        self.debug = debug
 
         # list for filtered links
         self.news_links = []
@@ -31,7 +30,8 @@ class newsScraper:
         main_request = main_session.get(url,headers=self.headers)
         if main_request.status_code == 200:
             main_soup = BeautifulSoup(main_request.text, 'html.parser')
-            print(main_request.headers)
+            if self.debug is True:
+                print(main_request.headers)
             # main links
             # get <a> elements from main content
             main_links = main_soup.find_all('a')
@@ -49,7 +49,8 @@ class newsScraper:
                         if href.find(self.sep) >= self.tol and href.find(self.sep) != -1:
                             self.news_links.append(href)
         else:
-            print("connection failed STATUS CODE : " + str(main_request.status_code))
+            if self.debug is True:
+                print("connection failed STATUS CODE : " + str(main_request.status_code))
             main_session.close()
 
         for news in self.news_links:
@@ -61,9 +62,11 @@ class newsScraper:
             #wait_time = random.randrange(2,15)
             #time.sleep(wait_time)
             news_request = main_session.get(news,headers=self.headers)
-            print(news_request)
+            if self.debug is True:
+                print(news_request)
             if news_request.status_code == 200:
-                print('Connected to : ' + news)
+                if self.debug is True:
+                    print('Connected to : ' + news)
                 news_soup = BeautifulSoup(news_request.text,'html.parser')
                 # find all p elements
                 news_ps = news_soup.find_all('p')
@@ -73,7 +76,8 @@ class newsScraper:
                     if news_string is not None:
                         self.p_data += news_string
             else:
-                print('not found ' + news + " STATUS CODE: "+ str(news_request.status_code))
+                if self.debug is True:
+                    print('not found ' + news + " STATUS CODE: "+ str(news_request.status_code))
 
 
         main_session.close()
@@ -99,7 +103,10 @@ class newsScraper:
                 self.word_count[data] = self.p_data.count(data)
 
 
-# class for using yfinance with the word count data
+
+
+
+
 
 
 
