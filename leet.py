@@ -35,13 +35,15 @@ def findStonk(stonk):
     stonk_soup = BeautifulSoup(stonk_request.content, 'html.parser')
 
     stonk_quote = stonk_soup.find('div',{'id':'quote-header-info'})
-    stonk_data = stonk_quote.find_all('span')
+    stonk_subquote = stonk_quote.find('div',{'class':'D(ib) Mend(20px)'})
+    stonk_data = stonk_subquote.find_all('span')
 
     cur_price = stonk_data[-3].string
     cur_change = stonk_data[-2].string
-    percent_change = cur_change[cur_change.find('(')+1:cur_change.find('%')]
-    percent_change = float(percent_change)
-    return [stonk,cur_price,percent_change]
+    if cur_change:
+        perc_change = cur_change[cur_change.find('(')+1:cur_change.find('%')]
+        perc_change = float(perc_change)
+        return [stonk,cur_price,perc_change]
 
 
 # Symbol handler
