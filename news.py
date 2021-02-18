@@ -59,7 +59,7 @@ class newsScraper:
             # main links
             # get <a> elements from main content
             main_links = main_soup.find_all('a')
-            main_p = main_soup.find_all('p')
+            #main_p = main_soup.find_all('p')
             # find the news related links
             if main_links:
                 for links in main_links:
@@ -120,13 +120,15 @@ class newsScraper:
         #create dictionary with count
         #this portion takes the longest
 
-        with open('StonkData.csv',mode='r') as infile:
+        with open('/Users/calblanco/PycharmProjects/LeetReader/Data/StonkData.csv', mode='r') as infile:
             reader = csv.reader(infile)
-            with open ('temp.csv',mode='w') as outfile:
-                write = csv.writer(outfile)
-                myDict = {rows[0]: rows[1] for rows in reader}
 
-        count_dict = {}
+            myDict = {}
+
+            for rows in reader:
+                myDict[rows[0]] = rows[1]
+
+
         for data in data_list:
             if data in myDict:
                 self.word_count[data] = self.p_data.count(data)

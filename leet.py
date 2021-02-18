@@ -32,18 +32,25 @@ def findStonk(stonk):
     url = yahoo + stonk.upper() + "?p=" + stonk.upper() + "&.tsrc=fin-srch"
     print(url)
     stonk_request = requests.get(url)
-    stonk_soup = BeautifulSoup(stonk_request.content, 'html.parser')
+    if stonk_request.status_code == 200:
+        stonk_soup = BeautifulSoup(stonk_request.content, 'html.parser')
 
-    stonk_quote = stonk_soup.find('div',{'id':'quote-header-info'})
-    stonk_subquote = stonk_quote.find('div',{'class':'D(ib) Mend(20px)'})
-    stonk_data = stonk_subquote.find_all('span')
+        stonk_quote = stonk_soup.find('div',{'id':'quote-header-info'})
+        try:
+            stonk_subquote = stonk_quote.find('div', {'class': 'D(ib) Mend(20px)'})
+            stonk_data = stonk_subquote.find_all('span')
 
-    cur_price = stonk_data[-3].string
-    cur_change = stonk_data[-2].string
-    if cur_change:
-        perc_change = cur_change[cur_change.find('(')+1:cur_change.find('%')]
-        perc_change = float(perc_change)
-        return [stonk,cur_price,perc_change]
+            cur_price = stonk_data[-3].string
+            cur_change = stonk_data[-2].string
+            if cur_change:
+                perc_change = cur_change[cur_change.find('(')+1:cur_change.find('%')]
+                perc_change = float(perc_change)
+                return [stonk,cur_price,perc_change]
+        except AttributeError:
+            print('could not find quote for ' + stonk)
+            return [stonk,0,0]
+    else:
+        print('no link available / connection failed')
 
 
 # Symbol handler
@@ -75,11 +82,11 @@ cleanSymbols = []
 graph = True
 
 
-yf = newsScraper('https://finance.yahoo.com/','news',10,"yahoo",False)
+yf = newsScraper('https://finance.yahoo.com/','news',10,"yahoo",True)
 print(yf.word_count)
 newsScrappers.append(yf)
 
-cnbc = newsScraper('https://www.cnbc.com/economy/','2021',10,'cnbc',False)
+cnbc = newsScraper('https://www.cnbc.com/economy/','2021',10,'cnbc',True)
 print(cnbc.word_count)
 newsScrappers.append(cnbc)
 
@@ -122,12 +129,18 @@ if graph is True:
     #This portion creates a graph of all the symbols with their respective percentage change
     company = []
     percent_change = []
+    fig, ax = plt.subplots(figsize=(len(cleanSymbols),10))
     for ticker in handled:
         company.append(ticker[0])
         percent_change.append(ticker[2])
 
-    plt.figure(figsize=(len(company), 10))
-    plt.bar(company, percent_change)
+    #plt.figure(figsize=(len(company), 10))
+    ax.scatter(company, percent_change,s=1000,c=percent_change,cmap='viridis')
+    ax.set_xlabel('Symbol')
+    ax.set_ylabel('% Change')
+    ax.set_title('Symbols vs Their % Change')
+    ax.grid(True)
+    #fig.tight_layout()
     plt.savefig('stronk.png')
 
 
