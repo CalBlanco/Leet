@@ -6,15 +6,15 @@ import csv
 '''Reddit API class
 
     @params:
-        sub - The subreddit wanted to be searched example: 'r/wallstreetbets'
-        listing - The type of data that is wanting to be searches. example: 'hot', 'new', 'random', or 'rising' posts
-        dataType - The type of data that is wanting to be searched example: 'title', 'selftext', or 'all'
-        searchAmount - The amount of searches you want to search in the specific category in the listings argument example: '100'
+        sub - The subreddit searched. example: 'r/wallstreetbets'
+        listing - The type of post searched. example: 'hot', 'new', 'random', or 'rising' posts
+        dataType - The type of data searched. example: 'title', 'selftext', or 'all'
+        searchAmount - The amount of searches from each post. example: '100'
             
 '''
 
 class StonkRedditAPI:
-    def __init__(self, sub, listing, dataType,searchAmount):
+    def __init__(self, sub, listing, dataType, searchAmount):
         #
         self.sub = sub
         self.listing = listing
@@ -25,12 +25,17 @@ class StonkRedditAPI:
         self.p_data = ''
         self.word_count = {}
 
-        #adds the items from the data fram into a string
-        def addToString():
+        #adds the items from the data frame into a string
+        def addToString(search):
             for redd_p in search:
                 redd_string = redd_p
                 if redd_string is not None:
                     self.p_data += redd_string
+        
+        #To List both title and selftext
+        def allListings(search1, search2):
+            addToString(search1)
+            addToString(search2)
 
         CLIENT_ID = 'kmLjEwV4QdbwUg'
         SECRET_KEY = 'S02BLYQZfxR5CXgRRrzTFOlz2Ru_xg'
@@ -69,13 +74,12 @@ class StonkRedditAPI:
 
         #search both title and selftext of the post, otherwise only the specific part of the post
         if self.dataType == 'all':
-            search = df['title']
-            addToString()
-            search = df['selftext']
-            addToString()
+            search1 = df['title']
+            search2 = df['selftext']
+            allListings(search1, search2)
         else:
             search = df[f'{self.dataType}']
-            addToString()
+            addToString(search)
 
 
 
@@ -87,9 +91,7 @@ class StonkRedditAPI:
         #compares the the string to the data in the dictionary
         with open('StonkData.csv', mode='r') as infile:
             reader = csv.reader(infile)
-            with open('temp.csv', mode='w') as outfile:
-                write = csv.writer(outfile)
-                myDict = {rows[0]: rows[1] for rows in reader}
+            myDict = {rows[0]: rows[1] for rows in reader}
 
         for data in data_list:
             if data in myDict:
