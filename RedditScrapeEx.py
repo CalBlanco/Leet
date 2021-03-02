@@ -1,11 +1,11 @@
 from StonkRedditAPI import StonkRedditAPI
 from YahooFinanceSearch import YahooFinanceSearch
 
-test1 = StonkRedditAPI('r/wallstreetbets', 'hot', 'all', 100)
-test2 = StonkRedditAPI('r/Wallstreetbetsnew', 'hot', 'all', 100)
-test3 = StonkRedditAPI('r/WallStreetbetsELITE', 'hot', 'all', 100)
-print('r/wallstreetbets', test1.word_count)
-print('r/Wallstreetbetsnew', test2.word_count)
-print('r/WallStreetbetsELITE', test3.word_count)
+WSB = StonkRedditAPI('r/wallstreetbets', 'new', 'all', 100)
+WSBN = StonkRedditAPI('r/Wallstreetbetsnew', 'new', 'all', 100)
+WSBE = StonkRedditAPI('r/WallStreetbetsELITE', 'new', 'all', 100)
+print('r/wallstreetbets', WSB.word_count)
+print('r/Wallstreetbetsnew', WSBN.word_count)
+print('r/WallStreetbetsELITE', WSBE.word_count)
 
-yahoo_test = YahooFinanceSearch( 'reddit', test1, test2, test3,)
+YahooFinanceSearch( 'reddit', WSB, WSBN, WSBE,)
