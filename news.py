@@ -120,7 +120,7 @@ class newsScraper:
         #create dictionary with count
         #this portion takes the longest
 
-        with open('/Users/calblanco/PycharmProjects/LeetReader/Data/StonkData.csv', mode='r') as infile:
+        with open('StonkData.csv', mode='r') as infile:
             reader = csv.reader(infile)
 
             myDict = {}
