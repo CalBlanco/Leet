@@ -12,9 +12,9 @@ class YahooFinanceSearch:
 
             @note : this function is only used by the symbolHandler function currently.
 
-            @param: it takes one argument and that is a stock symbol like AAPL, or something.
+            @param: it takes one argument and that is a list called stock_item, [symbol, count] ex:['AAPL',20].
 
-            @return a list with the symbol itself, the current price, and the percentage change.
+            @return a list with the symbol itself, count on site, and the percentage change.
 
             str is the url that it is going to grab data from. the concatenation of the strings represent where in the link the.
             symbol must be placed in order for it to find the right page.
@@ -24,9 +24,14 @@ class YahooFinanceSearch:
             this div contains the stock pricing info.
 
             Then i convert the cur change to the percentage change by locating the numerical value after the first ( and before.
-            the % sign. Cast that value to a float for graphing later.'''
+            the % sign. Cast that value to a float for graphing later.
+            
+            Changed this around this around to pass all the relevant graphing data in one spot 
+            '''
 
-        def findStonk(stonk):
+        def findStonk(stonk_item):
+            #pull out symbol
+            stonk = stonk_item[0]
             yahoo = 'http://finance.yahoo.com/quote/'
             url = yahoo + stonk.upper() + "?p=" + stonk.upper() + "&.tsrc=fin-srch"
             print(url)
@@ -39,15 +44,14 @@ class YahooFinanceSearch:
                     stonk_subquote = stonk_quote.find('div', {'class': 'D(ib) Mend(20px)'})
                     stonk_data = stonk_subquote.find_all('span')
 
-                    cur_price = stonk_data[-3].string
                     cur_change = stonk_data[-2].string
                     if cur_change:
                         perc_change = cur_change[cur_change.find('(') + 1:cur_change.find('%')]
                         perc_change = float(perc_change)
-                        return [stonk, cur_price, perc_change]
+                        return [stonk,stonk_item[1], perc_change]
                 except AttributeError:
                     print('could not find quote for ' + stonk)
-                    return [stonk, 0, 0]
+                    return [stonk,0, 0]
                 except IndexError:
                     print("Data not found for " + stonk)
                     return [stonk,0,0]
@@ -88,10 +92,10 @@ class YahooFinanceSearch:
         for scraper in ScrapeTickerList:
             # pull word count dicts
             count_items = scraper.word_count.items()
-            new_count = {str(key): str(values) for key, values in count_items}
-            keys = list(new_count.keys())
-            for key in keys:
-                symbolList.append(key)
+            new_count = {str(key): int(values) for key, values in count_items}
+            #changed the output here to return the symbol and the count for graphing later
+            symbolList+= list(map(list,new_count.items()))
+
         # remove duplicate entries from symbolList and turns into cleanSymbols
         for symbol in symbolList:
             if symbol not in cleanSymbols:
@@ -99,42 +103,7 @@ class YahooFinanceSearch:
 
         # get stonk info
         # print(symbolList)
-        handled = symbolHandler(cleanSymbols)
+        handled = symbolHandler(symbolList)
 
         self.handled_symbols = handled
 
-        # graphing (not working atm)
-        graph = True
-
-        if graph is True:
-            # This portion creates the graphs for frequency of symbols per news site
-            for scraper in ScrapeTickerList:
-                if scraper.p_data is not None:
-                    current_count = scraper.word_count
-                    keys = current_count.keys()
-                    values = current_count.values()
-                    plt.figure(figsize=(len(keys), 10))
-                    plt.bar(keys, values)
-
-                    plt.savefig(filename+'countchart.png')
-
-            # This portion creates a graph of all the symbols with their respective percentage change
-            company = []
-            percent_change = []
-            fig, ax = plt.subplots(figsize=(len(cleanSymbols), 10))
-            for ticker in handled:
-                try:
-                    company.append(ticker[0])
-                    percent_change.append(ticker[2])
-                except TypeError:
-                    print("None type found")
-
-            # plt.figure(figsize=(len(company), 10))
-            ax.scatter(company, percent_change, s=1000, c=percent_change, cmap='viridis')
-            ax.set_xlabel('Symbol')
-            ax.set_ylabel('% Change')
-            ax.set_title('Symbols vs Their % Change')
-            ax.grid(True)
-            # fig.tight_layout()
-            plt.savefig(f'{self.filename}.png')
-            

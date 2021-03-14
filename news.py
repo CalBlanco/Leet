@@ -44,6 +44,7 @@ class newsScraper:
         # list for filtered links
         self.news_links = []
         self.p_data = ""
+        self.quotes = []
         self.word_count = {}
 
         main_session = requests.Session()
@@ -87,10 +88,6 @@ class newsScraper:
                 main_session.cookies.clear()
                 # news request -> content -> soup : previously known as
 
-                #experimenting with delays on requests so that we don't get flagged
-                wait_seed = random.seed()
-                #wait_time = random.randrange(2,15)
-                #time.sleep(wait_time)
                 news_request = main_session.get(news,headers=self.headers)
                 if self.debug is True:
                     print(news_request)
@@ -102,6 +99,18 @@ class newsScraper:
                     news_ps = news_soup.find_all('p')
                     # convert all paragraphs to a single string
                     for news_p in news_ps:
+                        if news_p.find('a'):
+                            quote_links = news_p.find_all('a')
+                            for item in quote_links:
+                                cur_href=item.get('href')
+                                split_href = cur_href.split('/')
+                                for word in split_href:
+                                    if word == "quote":
+                                        quote= split_href[-1]
+                                        if len(quote) >=8:
+                                            iso_quote = quote.split('?')[0]
+                                            self.quotes.append(iso_quote)
+
                         news_string = news_p.string
                         if news_string is not None:
                             self.p_data += news_string
