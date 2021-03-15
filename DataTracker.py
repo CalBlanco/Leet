@@ -1,10 +1,17 @@
 import matplotlib.pyplot as plt
 import numpy as np
+import csv
+from datetime import datetime
 
+
+'''
+    Class graph takes in data and a name for the graph files
+    
+    it is really just a lot of matplotlib stuff and not crazy important long term
+    just nice for data visual, this is also where the ratio is calculated but I think I will do that somewhere else
+'''
 
 class Graph:
-
-
     def __init__(self,data,name):
         x_ax = []
         count = []
@@ -60,3 +67,62 @@ class Graph:
         ratio.set_ylabel('log(count) * change / 100')
         fig3_fname = name+"ratio.png"
         fig3.savefig(fig3_fname)
+
+
+'''
+    DataTracker puts the data found from the sites into a CSV file.
+
+    @params : data this will be the handled_symbols from YahooFinnanceSearch class
+
+     The first item of each row will be the curent time, then followed by each stock item in data formated into string format Symbol/Count/Change
+     returns nothing 
+
+     @functions : 
+        writeTo() takes no parameters and writes the variable data to a csv 
+        readFrom() 
+
+
+'''
+
+class DataTracker:
+    filename = ""
+    data = []
+    data_strs = []
+
+    def __init__(self, data, filename):
+        self.filename = filename
+        # get the current time when run
+        cur_time = datetime.utcnow()
+        self.data_strs = [cur_time]
+        self.data = data
+        self.outdata = []
+
+    def writeTo(self):
+        for item in self.data:
+            out_str = f"{item[0]}/{item[1]}/{item[2]}"
+            self.data_strs.append(out_str)
+        with open(self.filename + '.csv', "a", newline='') as fp:
+            wr = csv.writer(fp, dialect='excel')
+            wr.writerow(self.data_strs)
+            print("wrote data to file")
+
+    def readFrom(self):
+        with open(self.filename + '.csv', 'r', newline='') as file:
+            reader = csv.reader(file)
+            for row in reader:
+                self.outdata.append(row)
+        print("extracted data from file")
+
+        out_list = []
+        for row in self.outdata:
+
+            date = row[0]
+            row_obj = [date]
+            items = row[1:]
+            for item in items:
+                item_split = item.split('/')
+                item_obj = [item_split[0], int(item_split[1]), float(item_split[2])]
+                row_obj.append(item_obj)
+            out_list.append(row_obj)
+
+        return out_list

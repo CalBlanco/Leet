@@ -1,7 +1,7 @@
 from StonkRedditAPI import StonkRedditAPI
 from YahooFinanceSearch import YahooFinanceSearch
 from news import newsScraper
-from DataTracker import Graph
+from DataTracker import Graph, DataTracker
 
 
 
@@ -20,9 +20,13 @@ print(R.handled_symbols)
 #newsScraper
 yf = newsScraper('https://finance.yahoo.com/','news',10,"yahoo",True)
 print(yf.word_count)
-cnbc = newsScraper('https://www.cnbc.com/economy/','2021',10,'cnbc',True)
-print(cnbc.word_count)
-News = YahooFinanceSearch('news',yf,cnbc)
+#cnbc = newsScraper('https://www.cnbc.com/economy/','2021',10,'cnbc',True)
+#print(cnbc.word_count)
+News = YahooFinanceSearch('news',yf)
 print(News.handled_symbols)
-Graph(News.handled_symbols,'News')
 
+symbs = News.handled_symbols
+
+exDT = DataTracker(symbs,'example_datasheet')
+exDT.writeTo()
+print(exDT.readFrom())
