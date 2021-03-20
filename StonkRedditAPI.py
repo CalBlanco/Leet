@@ -1,6 +1,7 @@
 import requests
 import pandas as pd
-import csv
+import spacy
+from collections import Counter
 
 
 '''Reddit API class
@@ -9,33 +10,22 @@ import csv
         sub - The subreddit searched. example: 'r/wallstreetbets'
         listing - The type of post searched. example: 'hot', 'new', 'random', or 'rising' posts
         dataType - The type of data searched. example: 'title', 'selftext', or 'all'
-        searchAmount - The amount of searches from each post. example: '100'
-            
+        searchAmount - The amount of searches for each post. example: '100'
+        headNum - gets n number of tickers to view (Just like in pandas)
+                    
 '''
 
 class StonkRedditAPI:
-    def __init__(self, sub, listing, dataType, searchAmount):
+    def __init__(self, sub, listing, dataType, searchAmount, headNum):
         #
         self.sub = sub
         self.listing = listing
         self.dataType = dataType
         self.searchAmount = searchAmount
+        self.headNum = headNum
 
-        #for data processing and comparrison
-        self.p_data = ''
-        self.word_count = {}
+        self.final = []
 
-        #adds the items from the data frame into a string
-        def addToString(search):
-            for redd_p in search:
-                redd_string = redd_p
-                if redd_string is not None:
-                    self.p_data += redd_string
-        
-        #To List both title and selftext
-        def allListings(search1, search2):
-            addToString(search1)
-            addToString(search2)
 
         CLIENT_ID = 'kmLjEwV4QdbwUg'
         SECRET_KEY = 'S02BLYQZfxR5CXgRRrzTFOlz2Ru_xg'
@@ -67,33 +57,51 @@ class StonkRedditAPI:
                 'upvote_ratio': post['data']['upvote_ratio']
             }, ignore_index=True)
         #Prints all the keys we can use to search and put inside the data frame
-        print(post['data'].keys())
 
+        #Model being used from Spacy
+        nlp = spacy.load('en_core_web_trf')
 
-        print(df,'\n')
+        #Simple Blacklist until we train our own model.
+        BLACKLIST = ['🚀', '🚀 daily gme', 'repost', 'hf', 'keep going amc 2k', 'gme &', 'wsb']
 
-        #search both title and selftext of the post, otherwise only the specific part of the post
+        def get_orgs(text):
+            # process the text with our SpaCy model to get named entities
+            doc = nlp(text)
+            # initialize list to store identified organizations
+            org_list = []
+            # loop through the identified entities and append ORG entities to org_list
+            for entity in doc.ents:
+                if entity.label_ == 'ORG' and entity.text.lower() not in BLACKLIST:
+                    org_list.append(entity.text)
+            # if organization is identified more than once it will appear multiple times in list
+            # we use set() to remove duplicates then convert back to list
+            org_list = list(set(org_list))
+            return org_list
+
         if self.dataType == 'all':
-            search1 = df['title']
-            search2 = df['selftext']
-            allListings(search1, search2)
+
+            df['organizations'] = df['title'].apply(get_orgs)
+            title = df['organizations'].to_list()
+            title = [org for sublist in title for org in sublist]
+
+            df['organizations'] = df['selftext'].apply(get_orgs)
+            selftext = df['organizations'].to_list()
+            selftext = [org for sublist in selftext for org in sublist]
+
+            self.org_freq = Counter(title) + Counter(selftext)
+            self.final = self.org_freq.most_common(self.headNum)
+
+            print(self.sub, self.final)
+
+            # Use this when putting data found into a csv file
+            # df.to_csv('reddit.csv', sep='|', index=False)
+
         else:
-            search = df[f'{self.dataType}']
-            addToString(search)
+            df['organizations'] = df[f'{self.dataType}'].apply(get_orgs)
+            search = df['organizations'].to_list()
+            search = [org for sublist in search for org in sublist]
 
+            self.org_freq = Counter(search)
+            final = self.org_freq.most_common(self.headNum)
 
-
-        # separate each word and put into an array
-        data_list = self.p_data.split()
-        # filter array with the condition that the word is less than 5 characters (largest ticker length seemed to be 5)
-        data_list = filter(lambda x: (len(x) <= 5), data_list)
-
-        #compares the the string to the data in the dictionary
-        with open('StonkData.csv', mode='r') as infile:
-            reader = csv.reader(infile)
-            myDict = {rows[0]: rows[1] for rows in reader}
-
-        for data in data_list:
-            if data in myDict:
-                self.word_count[data] = self.p_data.count(data)
-
+            print(self.sub, self.final)
