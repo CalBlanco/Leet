@@ -1,14 +1,43 @@
 import requests
 from bs4 import BeautifulSoup
-import matplotlib.pyplot as plt
+from collections import Counter
+
 
 class YahooFinanceSearch:
-    def __init__(self,  filename, *Dictionaries):
+    def __init__(self, headNum ,*Counters):
         #
-        self.filename = filename
-        self.Dictionaries = Dictionaries
+        self.Counters = Counters
+        self.headNum = headNum
 
-        def findStonk(stonk):
+        ''' FINDSTONK is my shortcut to using the yfinance api. It uses the requests lib and beautifulsoup.
+            @note : this function is only used by the symbolHandler function currently.
+            @param: it takes one argument and that is a list called stock_item, [symbol, count] ex:['AAPL',20].
+            @return a list with the symbol itself, count on site, and the percentage change.
+            str is the url that it is going to grab data from. the concatenation of the strings represent where in the link the.
+            symbol must be placed in order for it to find the right page.
+            There were some issues in finding info between NYSE listed stocks and other markets so to fix that.
+            It finds a specific <div> element with id=quote-header-info.
+            this div contains the stock pricing info.
+            Then i convert the cur change to the percentage change by locating the numerical value after the first ( and before.
+            the % sign. Cast that value to a float for graphing later.
+
+            Changed this around this around to pass all the relevant graphing data in one spot 
+            '''
+
+        def addSubTicks(counters):
+            final = Counter()
+            for i in counters:
+                final += i.org_freq
+            return final.most_common(headNum)
+
+        self.Counters = addSubTicks(Counter(self.Counters))
+
+        print('\nFinal', self.Counters)
+
+
+        def findStonk(stonk_item):
+            # pull out symbol
+            stonk = stonk_item[0]
             yahoo = 'http://finance.yahoo.com/quote/'
             url = yahoo + stonk.upper() + "?p=" + stonk.upper() + "&.tsrc=fin-srch"
             print(url)
@@ -21,26 +50,26 @@ class YahooFinanceSearch:
                     stonk_subquote = stonk_quote.find('div', {'class': 'D(ib) Mend(20px)'})
                     stonk_data = stonk_subquote.find_all('span')
 
-                    cur_price = stonk_data[-3].string
                     cur_change = stonk_data[-2].string
                     if cur_change:
                         perc_change = cur_change[cur_change.find('(') + 1:cur_change.find('%')]
                         perc_change = float(perc_change)
-                        return [stonk, cur_price, perc_change]
+                        return [stonk, stonk_item[1], perc_change]
                 except AttributeError:
                     print('could not find quote for ' + stonk)
                     return [stonk, 0, 0]
+                except IndexError:
+                    print("Data not found for " + stonk)
+                    return [stonk, 0, 0]
+
             else:
                 print('no link available / connection failed')
 
         # Symbol handler
         ''' SYMBOLHANDLER is a function for taking all of the found symbols and creating a list of values from the STONKFINDER
             method.
-
             @param: list of symbols we want information for
-
             @return : list of those symbols info 
-
             Super basic function. Just uses stonkFinder() and then appends that information to a list.
             Decided to split these into two separate functions to increase modularity of stonkFinder(). 
         '''
@@ -56,20 +85,17 @@ class YahooFinanceSearch:
         # list of all found symbols
         symbolList = []
         cleanSymbols = []
+        mainDict = dict(self.Counters)
         # set to true if you want the program to generate graphs for each site
-        graph = True
 
-        for dicts in Dictionaries:
-            ScrapeTickerList.append(dicts)
+        #print("so Far",type(Dictionaries))
 
+        # pull word count dicts
+        count_items = mainDict.items()
+        new_count = {str(key): int(values) for key, values in count_items}
+        # changed the output here to return the symbol and the count for graphing later
+        symbolList += list(map(list, new_count.items()))
 
-        for scraper in ScrapeTickerList:
-            # pull word count dicts
-            count_items = scraper.word_count.items()
-            new_count = {str(key): str(values) for key, values in count_items}
-            keys = list(new_count.keys())
-            for key in keys:
-                symbolList.append(key)
         # remove duplicate entries from symbolList and turns into cleanSymbols
         for symbol in symbolList:
             if symbol not in cleanSymbols:
@@ -77,35 +103,6 @@ class YahooFinanceSearch:
 
         # get stonk info
         # print(symbolList)
-        handled = symbolHandler(cleanSymbols)
+        handled = symbolHandler(symbolList)
 
-        # graphing (not working atm)
-        if graph is True:
-            # This portion creates the graphs for frequency of symbols per news site
-            for scraper in ScrapeTickerList:
-                if scraper.p_data is not None:
-                    current_count = scraper.word_count
-                    keys = current_count.keys()
-                    values = current_count.values()
-                    plt.figure(figsize=(len(keys), 10))
-                    plt.bar(keys, values)
-
-                    plt.savefig('chart.png')
-
-            # This portion creates a graph of all the symbols with their respective percentage change
-            company = []
-            percent_change = []
-            fig, ax = plt.subplots(figsize=(len(cleanSymbols), 10))
-            for ticker in handled:
-                company.append(ticker[0])
-                percent_change.append(ticker[2])
-
-            # plt.figure(figsize=(len(company), 10))
-            ax.scatter(company, percent_change, s=1000, c=percent_change, cmap='viridis')
-            ax.set_xlabel('Symbol')
-            ax.set_ylabel('% Change')
-            ax.set_title('Symbols vs Their % Change')
-            ax.grid(True)
-            # fig.tight_layout()
-            plt.savefig(f'{self.filename}.png')
-            
+        self.handled_symbols = handled
