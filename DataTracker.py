@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import csv
+import pandas as pd
 from datetime import datetime
 
 
@@ -53,16 +54,10 @@ class Graph:
         fig2_fname = name + "change.png"
         fig2.savefig(fig2_fname)
 
-        rat = []
-        for item in data:
-            if item[2] != 0:
-                log_count = np.log(item[1] + 1)
-                rat.append(item[2] * log_count * (1 / 100))
-            else:
-                rat.append(0)
 
-        fig3, ratio = plt.subplots(figsize=( (len(x_ax) / 2),max(rat) + 10))
-        ratio.bar(x_ax, rat, color=my_cmap(rescale(rat)))
+
+        fig3, ratio = plt.subplots(figsize=( (len(x_ax) / 2),max(change) + 10))
+        ratio.scatter(count, change, color=my_cmap(rescale(change)))
         ratio.set_xlabel('Symbol')
         ratio.set_ylabel('log(count) * change / 100')
         fig3_fname = name+"ratio.png"
@@ -85,9 +80,6 @@ class Graph:
 '''
 
 class DataTracker:
-    filename = ""
-    data = []
-    data_strs = []
 
     def __init__(self, data, filename):
         self.filename = filename
@@ -126,3 +118,4 @@ class DataTracker:
             out_list.append(row_obj)
 
         return out_list
+

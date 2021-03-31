@@ -1,7 +1,8 @@
 import requests
 from bs4 import BeautifulSoup
 import csv
-import random
+import pandas as pd
+from collections import Counter
 
 
 class newsScraper:
@@ -45,7 +46,6 @@ class newsScraper:
         self.news_links = []
         self.p_data = ""
         self.quotes = []
-        self.word_count = {}
 
         main_session = requests.Session()
         print('session started : ' + self.url)
@@ -137,15 +137,16 @@ class newsScraper:
             for rows in reader:
                 myDict[rows[0]] = rows[1]
 
+        word_counter = Counter()
 
         for data in data_list:
             if data in myDict:
-                self.word_count[data] = self.p_data.count(data)
+                #self.word_count[data] = self.p_data.count(data)
+                word_counter[data] += 1
 
 
 
-
-
+        self.word_count = word_counter
 
 
 

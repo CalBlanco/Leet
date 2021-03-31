@@ -1,39 +1,23 @@
 import requests
 from bs4 import BeautifulSoup
-import matplotlib.pyplot as plt
+import pandas as pd
+from collections import Counter
 
 class YahooFinanceSearch:
-    def __init__(self,  filename, *Dictionaries):
+    def __init__(self,  filename, *Scrapers):
         #
         self.filename = filename
-        self.Dictionaries = Dictionaries
+        self.Scrapers = Scrapers
+
 
         ''' FINDSTONK is my shortcut to using the yfinance api. It uses the requests lib and beautifulsoup.
 
-            @note : this function is only used by the symbolHandler function currently.
-
-            @param: it takes one argument and that is a list called stock_item, [symbol, count] ex:['AAPL',20].
-
-            @return a list with the symbol itself, count on site, and the percentage change.
-
-            str is the url that it is going to grab data from. the concatenation of the strings represent where in the link the.
-            symbol must be placed in order for it to find the right page.
-
-            There were some issues in finding info between NYSE listed stocks and other markets so to fix that.
-            It finds a specific <div> element with id=quote-header-info.
-            this div contains the stock pricing info.
-
-            Then i convert the cur change to the percentage change by locating the numerical value after the first ( and before.
-            the % sign. Cast that value to a float for graphing later.
             
-            Changed this around this around to pass all the relevant graphing data in one spot 
             '''
 
-        def findStonk(stonk_item):
-            #pull out symbol
-            stonk = stonk_item[0]
+        def findStonk(symbol):
             yahoo = 'http://finance.yahoo.com/quote/'
-            url = yahoo + stonk.upper() + "?p=" + stonk.upper() + "&.tsrc=fin-srch"
+            url = yahoo + symbol.upper() + "?p=" + symbol.upper() + "&.tsrc=fin-srch"
             print(url)
             stonk_request = requests.get(url)
             if stonk_request.status_code == 200:
@@ -48,19 +32,21 @@ class YahooFinanceSearch:
                     if cur_change:
                         perc_change = cur_change[cur_change.find('(') + 1:cur_change.find('%')]
                         perc_change = float(perc_change)
-                        return [stonk,stonk_item[1], perc_change]
+                        return perc_change
                 except AttributeError:
-                    print('could not find quote for ' + stonk)
-                    return [stonk,0, 0]
+                    print('could not find quote for ' + symbol)
+                    return 0
                 except IndexError:
-                    print("Data not found for " + stonk)
-                    return [stonk,0,0]
+                    print("Data not found for " + symbol)
+                    return 0
 
             else:
                 print('no link available / connection failed')
 
-        # Symbol handler
-        ''' SYMBOLHANDLER is a function for taking all of the found symbols and creating a list of values from the STONKFINDER
+
+
+        # getChange
+        ''' getChange is a function for taking all of the found symbols and creating a list of values from the STONKFINDER
             method.
 
             @param: list of symbols we want information for
@@ -71,39 +57,25 @@ class YahooFinanceSearch:
             Decided to split these into two separate functions to increase modularity of stonkFinder(). 
         '''
 
-        def symbolHandler(symbol_list):
-            return_li = []
+        def getChange(symbol_list):
+            perc = []
             for symbol in symbol_list:
-                return_li.append(findStonk(symbol))
+                perc.append(findStonk(symbol))
 
-            return return_li
-
-        ScrapeTickerList = []
-        # list of all found symbols
-        symbolList = []
-        cleanSymbols = []
-        # set to true if you want the program to generate graphs for each site
+            return perc
 
 
-        for dicts in Dictionaries:
-            ScrapeTickerList.append(dicts)
+        #create main data frame from list of scrapers input
+        agg_count = Counter()
+        for scraper in Scrapers:
+            agg_count += scraper.word_count
+        self.main_frame = pd.DataFrame.from_dict(agg_count, orient="index", columns=["count"])
+
+        #extract symbol list : index
+        symbol_list =self.main_frame.index
+        #run getChange to get change column
+        self.main_frame['change'] = getChange(symbol_list)
 
 
-        for scraper in ScrapeTickerList:
-            # pull word count dicts
-            count_items = scraper.word_count.items()
-            new_count = {str(key): int(values) for key, values in count_items}
-            #changed the output here to return the symbol and the count for graphing later
-            symbolList+= list(map(list,new_count.items()))
 
-        # remove duplicate entries from symbolList and turns into cleanSymbols
-        for symbol in symbolList:
-            if symbol not in cleanSymbols:
-                cleanSymbols.append(symbol)
-
-        # get stonk info
-        # print(symbolList)
-        handled = symbolHandler(symbolList)
-
-        self.handled_symbols = handled
 
