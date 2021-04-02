@@ -2,12 +2,14 @@ import requests
 from bs4 import BeautifulSoup
 import pandas as pd
 from collections import Counter
+from datetime import datetime
 
 class YahooFinanceSearch:
     def __init__(self,  filename, *Scrapers):
         #
         self.filename = filename
         self.Scrapers = Scrapers
+        self.cur = datetime.today()
 
 
         ''' FINDSTONK is my shortcut to using the yfinance api. It uses the requests lib and beautifulsoup.
@@ -69,12 +71,17 @@ class YahooFinanceSearch:
         agg_count = Counter()
         for scraper in Scrapers:
             agg_count += scraper.word_count
-        self.main_frame = pd.DataFrame.from_dict(agg_count, orient="index", columns=["count"])
+        count_frame = pd.DataFrame.from_dict(agg_count, orient="index", columns=["count"])
 
         #extract symbol list : index
-        symbol_list =self.main_frame.index
-        #run getChange to get change column
-        self.main_frame['change'] = getChange(symbol_list)
+        symbol_list = count_frame.index
+
+        #run getChange and create another series for change
+        change_frame = pd.DataFrame(getChange(symbol_list),index=count_frame.index,columns=['change'])
+
+        self.main_frame = pd.concat([count_frame,change_frame],axis=1,keys=[(self.cur,'count'),(self.cur,'price')])
+
+
 
 
 
