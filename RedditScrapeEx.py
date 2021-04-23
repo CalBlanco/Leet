@@ -1,6 +1,6 @@
 from StonkRedditAPI import StonkRedditAPI
-from YahooFinanceSearch import YahooFinanceSearch
 from news import newsScraper
+from DataTracker import FrameBuilder
 
 from datetime import datetime
 
@@ -28,8 +28,20 @@ yf = newsScraper('https://finance.yahoo.com/','news',10,"yahoo",True)
 print(yf.word_count)
 cnbc = newsScraper('https://www.cnbc.com/economy/','2021',10,'cnbc',True)
 print(cnbc.word_count)
-News = YahooFinanceSearch('news',yf)
-print(News.main_frame)
+
+
+#FrameBuilder Example
+count_list = [yf.word_count,cnbc.word_count]
+
+FrameBuilder(count_list,"temp1.csv")
+
+
+
+
+
+
+
+
 
 
 #end time and time difference

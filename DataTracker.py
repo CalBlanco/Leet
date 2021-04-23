@@ -1,7 +1,8 @@
 import matplotlib.pyplot as plt
 import numpy as np
-import csv
+import os
 import pandas as pd
+from collections import Counter
 from datetime import datetime
 
 
@@ -10,6 +11,8 @@ from datetime import datetime
     
     it is really just a lot of matplotlib stuff and not crazy important long term
     just nice for data visual, this is also where the ratio is calculated but I think I will do that somewhere else
+    
+    Ignore this class for now, worked temporarily on old data not set up for new change
 '''
 
 class Graph:
@@ -65,57 +68,88 @@ class Graph:
 
 
 '''
-    DataTracker puts the data found from the sites into a CSV file.
-
-    @params : data this will be the handled_symbols from YahooFinnanceSearch class
-
-     The first item of each row will be the curent time, then followed by each stock item in data formated into string format Symbol/Count/Change
-     returns nothing 
-
-     @functions : 
-        writeTo() takes no parameters and writes the variable data to a csv 
-        readFrom() 
-
+    FrameBuilder : 
+    @params : 
+        - data : input a list of counter objects
+        - filepath : enter a new file, an existing file, or just let it use default.csv
+        
+    @purpose :
+        - This is the fix for the long term data storage for our scraper data
+    
+    @core : 
+    
+        create frame from data
+        - Takes in a list of counter objects -> adds them to a main counter object
+        - use list(agg) to get the columns for the dataframe
+        - get the current time
+        - create an output frame with the inputed data, and date
+        
+        add to file
+        - finds the file at the filepath parameter
+        - check if the file is empty or not
+            - if file not empty:
+                - put the file contents into a dataframe
+                - use pd.concat(file_frame, out_frame) to make the final frame
+                - write the final_frame to csv
+            - else:
+                - write to the csv
 
 '''
 
-class DataTracker:
+# takes in a list of counters, and needs a filepath (default is just "default")
+class FrameBuilder:
+    def __init__(self, data, filepath="defualt.csv"):
+        # CREATING THE DATA FRAME
+        # create a container for the input counters
+        self.agg = Counter()
+        for item in data:
+            self.agg += item
 
-    def __init__(self, data, filename):
-        self.filename = filename
-        # get the current time when run
-        cur_time = datetime.utcnow()
-        self.data_strs = [cur_time]
-        self.data = data
-        self.outdata = []
+        # get the symbols from the counter to represent the columns of the data frame
+        df_columns = list(self.agg)
 
-    def writeTo(self):
-        for item in self.data:
-            out_str = f"{item[0]}/{item[1]}/{item[2]}"
-            self.data_strs.append(out_str)
-        with open(self.filename + '.csv', "a", newline='') as fp:
-            wr = csv.writer(fp, dialect='excel')
-            wr.writerow(self.data_strs)
-            print("wrote data to file")
+        # get current time for the row index of the data frame
+        cur_time = datetime.now()
 
-    def readFrom(self):
-        with open(self.filename + '.csv', 'r', newline='') as file:
-            reader = csv.reader(file)
-            for row in reader:
-                self.outdata.append(row)
-        print("extracted data from file")
+        # create frame from counter data, cur time, and symbol list
+        self.out_frame = pd.DataFrame(self.agg, index=[cur_time], columns=df_columns)
 
-        out_list = []
-        for row in self.outdata:
+        # SAVING TO FILE
+        # Pandas is weird to_csv is messy
+        # best strategy i could find is to just rewrite a whole file using read_csv -> appending a data frame -> to_csv
 
-            date = row[0]
-            row_obj = [date]
-            items = row[1:]
-            for item in items:
-                item_split = item.split('/')
-                item_obj = [item_split[0], int(item_split[1]), float(item_split[2])]
-                row_obj.append(item_obj)
-            out_list.append(row_obj)
+        # in order to ensure we don't get errors check for filesize of filepath, if > 0 file is not empty perform ^, else just write to a blank file and call it good
+        # check if the file exists, and if its size is greater than 0
+        def checkFile():
+            return os.path.isfile(filepath) and os.path.getsize(filepath) > 0
 
-        return out_list
+        checkFile()
+        if checkFile():
+            # if file already has content
+            print("File has content")
+
+            # create data from from file :
+            # pass it a file path
+            # index_col = [0] just shifts the data over because by default there will be a column we dont need
+            file_frame = pd.read_csv(filepath, index_col=[0])
+            print("converting file contents to dataframe")
+
+            final_df = pd.concat([file_frame, self.out_frame])
+            print("concating file frame and output frame")
+
+            final_df.to_csv(filepath, mode="w", columns=final_df.columns)
+            print("written to file")
+
+
+        else:
+            # if file is empty
+            print("File has no content")
+            self.out_frame.to_csv(filepath, mode='w', columns=df_columns)
+            print("written to file")
+
+
+
+
+
+
 
