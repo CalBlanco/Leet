@@ -33,7 +33,7 @@ print(cnbc.word_count)
 #FrameBuilder Example
 count_list = [yf.word_count,cnbc.word_count]
 
-FrameBuilder(count_list,"temp1.csv")
+FrameBuilder.readData("temp1.csv")
 
 
 

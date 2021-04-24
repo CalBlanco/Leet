@@ -70,8 +70,9 @@ class Graph:
 '''
     FrameBuilder : 
     @params : 
-        - data : input a list of counter objects
-        - filepath : enter a new file, an existing file, or just let it use default.csv
+        none for class
+        
+    
         
     @purpose :
         - This is the fix for the long term data storage for our scraper data
@@ -93,15 +94,50 @@ class Graph:
                 - write the final_frame to csv
             - else:
                 - write to the csv
-
+                
+        read data  from a file 
+        
+        
+        @functions 
+        - writeData():
+            @params:
+                data : list of counter objects
+                filepath : directory for the file you want to save to
+                    if the file you want to save to has data in it make sure the data corresponds with this format
+                    it will cause issues in data reading if the data format is not uniform throughout
+            
+            this function takes a list of counter objects and writes them to a csv, appending to a csv is weird so it is 
+            easier to just read the csv, turn that into a data frame then use pandas concat method, and finally re-write
+            all the data to a file
+            
+        - checkFile():
+            @params:
+                filepath : directory of file 
+                
+            this function just checks to see if the given file has any data on it. useful for knowing when a file has
+            data or not.
+            
+        - readData():
+            @params:
+                filepath : file directory to read from
+                
+            just reads the csv and returns a pd data frame
+             
+ 
 '''
 
 # takes in a list of counters, and needs a filepath (default is just "default")
 class FrameBuilder:
-    def __init__(self, data, filepath="defualt.csv"):
+    def __init__(self):
+        self.agg = Counter()
+
+    def checkFile(self,filepath):
+        return os.path.isfile(filepath) and os.path.getsize(filepath) > 0
+
+
+    def writeData(self,data,filepath="default.csv"):
         # CREATING THE DATA FRAME
         # create a container for the input counters
-        self.agg = Counter()
         for item in data:
             self.agg += item
 
@@ -114,17 +150,7 @@ class FrameBuilder:
         # create frame from counter data, cur time, and symbol list
         self.out_frame = pd.DataFrame(self.agg, index=[cur_time], columns=df_columns)
 
-        # SAVING TO FILE
-        # Pandas is weird to_csv is messy
-        # best strategy i could find is to just rewrite a whole file using read_csv -> appending a data frame -> to_csv
-
-        # in order to ensure we don't get errors check for filesize of filepath, if > 0 file is not empty perform ^, else just write to a blank file and call it good
-        # check if the file exists, and if its size is greater than 0
-        def checkFile():
-            return os.path.isfile(filepath) and os.path.getsize(filepath) > 0
-
-        checkFile()
-        if checkFile():
+        if self.checkFile(filepath):
             # if file already has content
             print("File has content")
 
@@ -148,8 +174,13 @@ class FrameBuilder:
             print("written to file")
 
 
+    def readData(self,filepath):
+        if self.checkFile(filepath):
+            read_frame = pd.read_csv(filepath,index_col=[0])
 
-
+            return read_frame
+        else:
+            print("File has no content")
 
 
 
