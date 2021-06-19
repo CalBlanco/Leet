@@ -1,9 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
-import os
-import pandas as pd
-from collections import Counter
 from datetime import datetime
+from collections import Counter
 
 
 '''
@@ -67,120 +65,50 @@ class Graph:
         fig3.savefig(fig3_fname)
 
 
-'''
-    FrameBuilder : 
-    @params : 
-        none for class
-        
-    
-        
-    @purpose :
-        - This is the fix for the long term data storage for our scraper data
-    
-    @core : 
-    
-        create frame from data
-        - Takes in a list of counter objects -> adds them to a main counter object
-        - use list(agg) to get the columns for the dataframe
-        - get the current time
-        - create an output frame with the inputed data, and date
-        
-        add to file
-        - finds the file at the filepath parameter
-        - check if the file is empty or not
-            - if file not empty:
-                - put the file contents into a dataframe
-                - use pd.concat(file_frame, out_frame) to make the final frame
-                - write the final_frame to csv
-            - else:
-                - write to the csv
-                
-        read data  from a file 
-        
-        
-        @functions 
-        - writeData():
-            @params:
-                data : list of counter objects
-                filepath : directory for the file you want to save to
-                    if the file you want to save to has data in it make sure the data corresponds with this format
-                    it will cause issues in data reading if the data format is not uniform throughout
-            
-            this function takes a list of counter objects and writes them to a csv, appending to a csv is weird so it is 
-            easier to just read the csv, turn that into a data frame then use pandas concat method, and finally re-write
-            all the data to a file
-            
-        - checkFile():
-            @params:
-                filepath : directory of file 
-                
-            this function just checks to see if the given file has any data on it. useful for knowing when a file has
-            data or not.
-            
-        - readData():
-            @params:
-                filepath : file directory to read from
-                
-            just reads the csv and returns a pd data frame
-             
- 
-'''
+''' This class manages the storing and reading of data '''
 
-# takes in a list of counters, and needs a filepath (default is just "default")
-class FrameBuilder:
-    def __init__(self):
-        self.agg = Counter()
+class Manager:
+    def __init__(self, root):
+        self.root = root
 
-    def checkFile(self,filepath):
-        return os.path.isfile(filepath) and os.path.getsize(filepath) > 0
+    def storeDict(self, inDict):
+        print("Storing Dictionary...")
+        current_time = datetime.now()
+        current_time = current_time.strftime('%Y_%m_%d_%H_%M')
+        print("Current Time : " + current_time)
 
+        for key in inDict:
+            filename = self.root + "/" + key + ".txt"
+            with open(filename, 'a') as outFile:
+                outFile.write(current_time + ":" + str(inDict[key]) + "\n")
 
-    def writeData(self,data,filepath="default.csv"):
-        # CREATING THE DATA FRAME
-        # create a container for the input counters
-        for item in data:
-            self.agg += item
+        print("Dict stored")
 
-        # get the symbols from the counter to represent the columns of the data frame
-        df_columns = list(self.agg)
+    def storeDataSet(self,listOfDicts):
+        print('STORING DATA')
+        a = Counter()
+        print("Merging Counters")
+        for item in listOfDicts:
+            a += Counter(item)
 
-        # get current time for the row index of the data frame
-        cur_time = datetime.now()
+        self.storeDict(a)
+        print("DATA STORED")
 
-        # create frame from counter data, cur time, and symbol list
-        self.out_frame = pd.DataFrame(self.agg, index=[cur_time], columns=df_columns)
+    def readData(self, symbol):
+        out_data = []
+        lines = []
 
-        if self.checkFile(filepath):
-            # if file already has content
-            print("File has content")
+        with open(self.root + "/" + symbol + ".txt", "r") as inFile:
+            lines = inFile.readlines()
 
-            # create data from from file :
-            # pass it a file path
-            # index_col = [0] just shifts the data over because by default there will be a column we dont need
-            file_frame = pd.read_csv(filepath, index_col=[0])
-            print("converting file contents to dataframe")
+        for line in lines:
+            date = line[0:line.find(":")]
+            count = line[line.find(":") + 1:len(line) - 1]
+            data_point = (date, int(count))
+            out_data.append(data_point)
 
-            final_df = pd.concat([file_frame, self.out_frame])
-            print("concating file frame and output frame")
+            print(data_point)
 
-            final_df.to_csv(filepath, mode="w", columns=final_df.columns)
-            print("written to file")
-
-
-        else:
-            # if file is empty
-            print("File has no content")
-            self.out_frame.to_csv(filepath, mode='w', columns=df_columns)
-            print("written to file")
-
-
-    def readData(self,filepath):
-        if self.checkFile(filepath):
-            read_frame = pd.read_csv(filepath,index_col=[0])
-
-            return read_frame
-        else:
-            print("File has no content")
-
+        return out_data
 
 
