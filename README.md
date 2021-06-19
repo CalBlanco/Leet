@@ -7,7 +7,7 @@
 ## Important Classes
 - news.py : newsScraper
 - StonkRedditAPI.py : StonkRedditAPI
-- DataTracker (lots of issues here)
+- DataTracker : Manager 
 
 ---
 
@@ -57,3 +57,28 @@
 - **Constructor Summary**
 - **Method Summary**
 ---
+ 
+### Manager
+- **Description** :
+ `This class is used to store our count data over longer periods of time. For each symbol that is found the Manager will first combine all lists of found symbols and counts, then create or append a file for each individual symbol. It is also able to read the count data for any symbols in our database`
+- **Field Summary**
+ 
+ | Name | Type   | Description                                      | Example                     | Notes                                                                                                                      |
+|------|--------|--------------------------------------------------|-----------------------------|----------------------------------------------------------------------------------------------------------------------------|
+| root | string | The root directory to store all of the data into | 'StockData' or 'DataFolder' | Create this folder before hand or there will be issues. The read method is only able to read from data in the root folder. |
+ 
+- **Constructor Summary**
+ 
+| Constructor   | Description                                                                                  |
+|---------------|----------------------------------------------------------------------------------------------|
+| Manager(root) | Only one constructor. Must give a root folder in order for this class to store or read data. |
+ 
+ 
+- **Method Summary**
+ 
+ 
+ | Name         | Return Type | Parameters  | Parameter Types    | Description                                                                                                                           | Example                                                                 | Notes                                                                                                                                              |
+|--------------|-------------|-------------|--------------------|---------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------|
+| storeDict(dict)    | void        | inDict      | Counter/Dictionary | Takes an input list of counters containing (symbol,count) and then appends the count data to a file for that symbol                   | let someCounter = {'a':2,'b':3,...'z':n}, storeDict(someCounter)        | Bread and butter of this class.                                                                                                                    |
+| storeDataSet(list) | void        | listOfDicts | List               | Takes in a list of counter objects. Merges them together so there are no duplicates, and then runs storeDict() on the merged counter. | let li = [someCounter,someCounter1, ... someCounterN], storeDataSet(li) | Caller of the storeDict method                                                                                                                     |
+| readData(str)     | List        | symbol      | string             | Looks through the root folder for the given symbols data. Then returns the tracked data.                                              | readData('AMC') or readData('GE')                                       | This only works if the files are in the root folder. If you are in a new root, or you have not tracked the symbol yet then it will return an error |
