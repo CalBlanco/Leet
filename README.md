@@ -2,6 +2,7 @@
  The goal of this program is to track and utilize data found from the news/reddit about hot stocks. 
  End game is to have something trading for us that will just be reading posts on WSB and yFinance. Currently this program finds word counts of stocks (or what it believes are stocks) and tracks the data. 
 
+# Use Main.py not RedditScrapeEx.py for main operation 
 ---
  
 ## Important Classes
@@ -82,3 +83,25 @@
 | storeDict(dict)    | void        | inDict      | Counter/Dictionary | Takes an input list of counters containing (symbol,count) and then appends the count data to a file for that symbol                   | let someCounter = {'a':2,'b':3,...'z':n}, storeDict(someCounter)        | Bread and butter of this class.                                                                                                                    |
 | storeDataSet(list) | void        | listOfDicts | List               | Takes in a list of counter objects. Merges them together so there are no duplicates, and then runs storeDict() on the merged counter. | let li = [someCounter,someCounter1, ... someCounterN], storeDataSet(li) | Caller of the storeDict method                                                                                                                     |
 | readData(str)     | List        | symbol      | string             | Looks through the root folder for the given symbols data. Then returns the tracked data.                                              | readData('AMC') or readData('GE')                                       | This only works if the files are in the root folder. If you are in a new root, or you have not tracked the symbol yet then it will return an error |
+
+ 
+---
+ 
+ ## Main.py
+ 
+ - **Description**
+ ``` Main driver for the application. Has a UI to run the scrapers and data collection, and also allows for viewing of the collected data```
+ 
+ - **Method Summary**
+ 
+ | Name             | Return   | Params | Param Type | Description                                                                                                       | Example                                                                         | Notes                                                                       |
+|------------------|----------|--------|------------|-------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------|-----------------------------------------------------------------------------|
+| runSingle()      | void     | none   | N.A        | Runs a single instance to collect data via news.py and StonkRedditAPI.py.                                         | N.A                                                                             | This function controls what is used in the runInBack function               |
+| runInBack()      | void     | none   | N.A        | Runs a runSingle() over a specified time period and frequency                                                     | N.A                                                                             |                                                                             |
+| look()           | void     | none   | N.A        | Allows user input to look at collected data                                                                       | N.A                                                                             | Going to improve this to show collected symbols and then let user pick      |
+| changeSettings() | void     | none   | N.A        | Nothing yet, but plan is to let user add/change what scrapers are used to fine tune the data collection if wanted | N.A                                                                             |                                                                             |
+| processCMD       | function | input  | str,char   | There is a command dictionary, the input is the key for the function to be executed in the dictionary             | let CMDS = {'a':doSomething,'b':doAnotherThing}, processInp('a') -> doSomething | Helpful and fun thing. Happy I found this and I want to use this style more |
+| printMenu()      | void     | none   | N.A        | Prints all the available options, then based on input it will run one of the above functions                      |                                                                                 |                                                                             |
+ 
+ 
+ 
