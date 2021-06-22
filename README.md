@@ -41,22 +41,32 @@
 - **Method Summary**
 `There are no methods in this class. Everything is done on initialization`
 ---
+ 
 ### StonkRedditAPI.py
 - **Description** :
- This class uses the reddit API directly to find a word count for stocks. Adrien I would love if you edited this with more info.
+ This class uses the reddit API directly and runs it through the Spacy model `en_core_web_trf`. We are using the 'organizations' entity to find tickers and important terminology within subs.
 - **Field Summary**
  
 | Name         | Type    | Description                                                   | Example                          | Notes                                                             |
 |--------------|---------|---------------------------------------------------------------|----------------------------------|-------------------------------------------------------------------|
-| sub          | string  | Subreddit to be searched                                      | 'wsb'                            | Adrien im gonna ask you to do the notes for these                 |
-| listing      | string  | The group of posts to be searched                             | 'hot', 'new', 'random', 'rising' | I think these are all the options for this field                  |
-| dataType     | string  | Tag for the data we want to look at                           | 'title', 'selftext', 'all'       | Only look at titles, only look at the text, or look at everything |
-| searchAmount | int     | number of searches to perform                                 | 100                              |                                                                   |
-| p_data       | string  | Used to store raw string data from the searches               |                                  |                                                                   |
-| word_count   | Counter | Used with p_data to determine what data is relevant to stonks |                                  |                                                                   | 
+| sub          | string  | Subreddit to be searched                                      | 'r/Wallstreetbetsnew'                            | Choose a sub from reddit to view                 |
+| listing      | string  | The group of posts to be searched                             | 'hot', 'new', 'random', 'rising' | Categories of searches within reddit API                  |
+| dataType     | string  | Tag for the data we want to look at                           | 'title', 'selftext', 'all'       | Only look at titles, selftext of a posr only look (Default - 'all') |
+| searchAmount | int     | Number of searches to perform                                 | 100                              | The amount of searches for the listing. (Default - 100)                                                                  |                                                                 |
+| headNum   | int | Amount of data to view | 10   | (Default is 10)                                                                  | 
 
 - **Constructor Summary**
+ 
+| Constructor                                                | Description                                                                                                                                                        |
+|------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| StonkRedditAPI(sub, listing, dataType='all', searchAmount=100, headNum=10) | sub, and listing are required while dataType, searchAmount, and headNum have default values. Parameters are specified above. |
+  
+ 
 - **Method Summary**
+ 
+| Name                                            | Description                                                                                                                                                        |
+|------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| get_orgs(text) | Loads Spacy model `en_core_web_trf` and processes all the data taken from the reddit API into a list to be filtered by the model. and returns the list of organizations found. |
 ---
  
 ### Manager
@@ -67,12 +77,6 @@
  | Name | Type   | Description                                      | Example                     | Notes                                                                                                                      |
 |------|--------|--------------------------------------------------|-----------------------------|----------------------------------------------------------------------------------------------------------------------------|
 | root | string | The root directory to store all of the data into | 'StockData' or 'DataFolder' | Create this folder before hand or there will be issues. The read method is only able to read from data in the root folder. |
- 
-- **Constructor Summary**
- 
-| Constructor   | Description                                                                                  |
-|---------------|----------------------------------------------------------------------------------------------|
-| Manager(root) | Only one constructor. Must give a root folder in order for this class to store or read data. |
  
  
 - **Method Summary**
