@@ -2,10 +2,15 @@ from StonkRedditAPI import StonkRedditAPI
 from news import newsScraper
 from DataTracker import Manager
 
+
+
 from datetime import datetime, timedelta
 import time
 
-root = 'TrackedInfo'
+
+
+root = '20210621_TripCollection'
+
 
 
 def runSingle():
@@ -35,16 +40,24 @@ def runInBack():
 
     print("\nStarting Process\n")
 
-    while int(hour) >0:
+    ran = 0
+    total_instances = int(int(hour)*60 / int(frequency))
+
+    while ran < total_instances:
         cur = datetime.now()
         time_delta = target_time - cur
 
         print("Instance : " + cur.strftime("%H:%M:%S"))
+        print("Run : " + str(ran) + " remaining : " + str(total_instances-ran))
+
+        ran+=1
+
 
         runSingle()
 
         print("Completed Instance")
         print("Waiting...")
+        print("Run : " + str(ran) + " remaining : " + str(total_instances - ran))
 
         time.sleep(int(frequency)*60)
 
@@ -64,6 +77,7 @@ def look():
     simp = simp.upper()
 
     manager = Manager(root)
+    manager.readData(simp)
 
     printMenu()
 
@@ -73,12 +87,17 @@ def changeSettings():
     print("Settings")
 
 
+def exit():
+    print("Exiting")
+
+
 #commands in dict for ease
 commands = {
     'a':runSingle,
     'b':runInBack,
     'c':look,
-    'd':changeSettings
+    'd':changeSettings,
+    'e':exit
 }
 def processCMD(inp):
     commands[inp]()
