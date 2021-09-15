@@ -13,7 +13,7 @@ runtime = datetime.now()
 
 
 
-
+#
 
 #newsScraper
 yf = NewsScraper('https://finance.yahoo.com/',['finance.yahoo.com','news'],"scraper",True)

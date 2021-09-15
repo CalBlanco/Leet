@@ -6,8 +6,7 @@ import random
 
 
 
-
-
+#
 class NewsScraper:
     '''
         @params:
@@ -93,6 +92,8 @@ class NewsScraper:
                                 self.p_data += item.string
 
                 sesh.close()
+            else:
+                print('no links filtered')
 
             if self.p_data:
                 data_list = self.p_data.split()
@@ -116,6 +117,10 @@ class NewsScraper:
                         word_counter[data] += 1
 
                 self.word_count = word_counter
+            else:
+                print('No data found')
+        else:
+            print('Main Connection Failed')
 
 
 
