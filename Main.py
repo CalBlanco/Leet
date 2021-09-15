@@ -1,5 +1,5 @@
 from StonkRedditAPI import StonkRedditAPI
-from news import newsScraper
+from news import NewsScraper
 from DataTracker import Manager
 
 
@@ -22,8 +22,8 @@ def runSingle():
     WSBE = StonkRedditAPI('r/WallStreetbetsELITE', 'new', 'all', 100)
 
     #Article Scraper
-    yf = newsScraper('https://finance.yahoo.com/', 'news', 10, "yahoo", True)
-    cnbc = newsScraper('https://www.cnbc.com/economy/', '2021', 10, 'cnbc', True)
+    yf = NewsScraper('https://finance.yahoo.com/',['finance.yahoo.com','news'],"yho",True)
+    cnbc = NewsScraper('https://www.cnbc.com/economy/', ['www.cnbc.com', '2021'],'cnbc',True )
 
     manager = Manager(root)
 
