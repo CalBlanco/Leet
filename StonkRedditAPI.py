@@ -49,13 +49,20 @@ class StonkRedditAPI:
                            params={'limit': f'{self.searchAmount}'})
 
         df = pd.DataFrame()
+
+        self.word_data = ''
+
         for post in res.json()['data']['children']:
-            df = df.append({
-                'subreddit': post['data']['subreddit'],
-                'title': post['data']['title'],
-                'selftext': post['data']['selftext'],
-                'upvote_ratio': post['data']['upvote_ratio']
-            }, ignore_index=True)
+            title = post['data']['title']
+            selftext = post['data']['selftext']
+            out_str = title + " " + selftext + " "
+            self.word_data += out_str
+            #df = df.append({
+            #    'subreddit': post['data']['subreddit'],
+            #    'title': post['data']['title'],
+            #    'selftext': post['data']['selftext'],
+            #    'upvote_ratio': post['data']['upvote_ratio']
+            #}, ignore_index=True)
         # Prints all the keys we can use to search and put inside the data frame
 
         # Model being used from Spacy

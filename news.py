@@ -5,8 +5,6 @@ from collections import Counter
 import random
 
 
-
-#
 class NewsScraper:
     '''
         @params:
@@ -16,7 +14,7 @@ class NewsScraper:
             debug : print connections or not
 
         @vars
-            p_data : a string containing all paragraph data from all filtered links
+            word_data : a string containing all paragraph data from all filtered links
             fil_links : the filtered links
             UAL : user agent list
 
@@ -38,7 +36,7 @@ class NewsScraper:
             'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.97 Safari/537.36',
         ]
 
-        self.p_data = ''
+        self.word_data = ''
         self.nickname=nickname
 
         #generate random user agent
@@ -89,38 +87,81 @@ class NewsScraper:
 
                         for item in tempSoup.find_all('p'):
                             if item.string is not None:
-                                self.p_data += item.string
+                                self.word_data += item.string
 
                 sesh.close()
             else:
                 print('no links filtered')
 
-            if self.p_data:
-                data_list = self.p_data.split()
-                data_list = filter(lambda x: (len(x) <= 5), data_list)
-                # create dictionary with count
-                # this portion takes the longest
-
-                with open('StonkData.csv', mode='r') as infile:
-                    reader = csv.reader(infile)
-
-                    myDict = {}
-
-                    for rows in reader:
-                        myDict[rows[0]] = rows[1]
-
-                word_counter = Counter()
-
-                for data in data_list:
-                    if data in myDict:
-                        # self.word_count[data] = self.p_data.count(data)
-                        word_counter[data] += 1
-
-                self.word_count = word_counter
-            else:
-                print('No data found')
+            # if self.word_data:
+            #     data_list = self.word_data.split()
+            #     data_list = filter(lambda x: (len(x) <= 5), data_list)
+            #     # create dictionary with count
+            #     # this portion takes the longest
+            #
+            #     with open('StonkData.csv', mode='r') as infile:
+            #         reader = csv.reader(infile)
+            #
+            #         myDict = {}
+            #
+            #         for rows in reader:
+            #             myDict[rows[0]] = rows[1]
+            #
+            #     word_counter = Counter()
+            #
+            #     for data in data_list:
+            #         if data in myDict:
+            #             # self.word_count[data] = self.p_data.count(data)
+            #             word_counter[data] += 1
+            #
+            #     self.word_count = word_counter
+            # else:
+            #     print('No data found')
         else:
             print('Main Connection Failed')
+
+
+
+class RedditInterface:
+    def __init__(self, sub, listing, dataType='all', searchAmount=100, headNum=10):
+        #
+        self.sub = sub
+        self.listing = listing
+        self.dataType = dataType
+        self.searchAmount = searchAmount
+        self.headNum = headNum
+
+        self.final = []
+
+        CLIENT_ID = 'kmLjEwV4QdbwUg'
+        SECRET_KEY = 'S02BLYQZfxR5CXgRRrzTFOlz2Ru_xg'
+
+        auth = requests.auth.HTTPBasicAuth(CLIENT_ID, SECRET_KEY)
+
+        login_data = {
+            'grant_type': 'password',
+            'username': 'DRIGONER',
+            'password': '@Th3F0rc3'
+        }
+
+        headers = {'User-Agent': 'MyAPI/0.0.1'}
+
+        res = requests.post('https://www.reddit.com/api/v1/access_token', auth=auth, data=login_data, headers=headers)
+
+        TOKEN = res.json()['access_token']
+
+        headers['Authorization'] = f'bearer {TOKEN}'
+
+        res = requests.get(f'https://oauth.reddit.com/{self.sub}/{self.listing}', headers=headers,
+                           params={'limit': f'{self.searchAmount}'})
+
+        self.word_data = ''
+
+        for post in res.json()['data']['children']:
+            title = post['data']['title']
+            selftext = post['data']['selftext']
+            out_str = title + " " + selftext + " "
+            self.word_data += out_str
 
 
 
