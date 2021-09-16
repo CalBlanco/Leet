@@ -1,6 +1,4 @@
-from StonkRedditAPI import StonkRedditAPI
 from news import NewsScraper,RedditInterface
-from DataTracker import Manager
 import Processor
 
 from datetime import datetime
@@ -12,28 +10,15 @@ runtime = datetime.now()
 
 
 WSB = RedditInterface('r/wallstreetbets','new')
-#print(WSB.word_data)
-
-
-#
-
+print(WSB.word_data)
 #newsScraper
 yf = NewsScraper('https://finance.yahoo.com/',['finance.yahoo.com','news'],"scraper",True)
-#print(yf.word_count)
+print(yf.word_data)
 cnbc = NewsScraper('https://www.cnbc.com/economy/',['www.cnbc.com','2021'])
-#print(cnbc.word_count)
+print(cnbc.word_data)
 
 
-
-
-
-#manager = Manager('TrackedInfo')
-
-
-#wc_list = [yf.word_count,cnbc.word_count]
-#print(wc_list)
-
-
+# you can pass a list or just a single scraper
 out = Processor.GenerateWordCount([yf.word_data,cnbc.word_data,WSB.word_data])
 print(out)
 

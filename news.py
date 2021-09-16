@@ -1,7 +1,5 @@
 import requests
 from bs4 import BeautifulSoup
-import csv
-from collections import Counter
 import random
 
 
@@ -92,31 +90,6 @@ class NewsScraper:
                 sesh.close()
             else:
                 print('no links filtered')
-
-            # if self.word_data:
-            #     data_list = self.word_data.split()
-            #     data_list = filter(lambda x: (len(x) <= 5), data_list)
-            #     # create dictionary with count
-            #     # this portion takes the longest
-            #
-            #     with open('StonkData.csv', mode='r') as infile:
-            #         reader = csv.reader(infile)
-            #
-            #         myDict = {}
-            #
-            #         for rows in reader:
-            #             myDict[rows[0]] = rows[1]
-            #
-            #     word_counter = Counter()
-            #
-            #     for data in data_list:
-            #         if data in myDict:
-            #             # self.word_count[data] = self.p_data.count(data)
-            #             word_counter[data] += 1
-            #
-            #     self.word_count = word_counter
-            # else:
-            #     print('No data found')
         else:
             print('Main Connection Failed')
 
